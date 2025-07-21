@@ -59,9 +59,12 @@ def logout():
 def index():
     if not is_logged_in():
         return redirect(url_for("login"))
+    query = request.args.get("q", "")
     objects = s3.list_objects_v2(Bucket=S3_BUCKET)
     files = [obj["Key"] for obj in objects.get("Contents", [])]
-    return render_template("index.html", files=files)
+    if query:
+        files = [f for f in files if query.lower() in f.lower()]
+    return render_template("index.html", files=files, query=query)
 
 
 @app.route("/upload", methods=["POST"])
